@@ -71,24 +71,22 @@ class MessageListener
 
         uint16_t poll(BaseMessageReader & src)
         {
-            auto size = src.available();
-            size = size > free() ? free() : size;
             uint16_t size_out = 0;
-            if (size > 0)
+
+            auto sidx = wrap(read_cursor + bytes_used);
+            auto eidx = sidx + free();
+            auto eidx_1 = eidx > ReadBufferSize
+                ? ReadBufferSize
+                : eidx;
+            auto size_1 = eidx_1 - sidx;
+            size_out += src.read_to(&buffer[sidx], size_1);
+            if ((size_out == size_1) && (eidx != eidx_1))
             {
-                auto sidx = wrap(read_cursor + bytes_used);
-                auto eidx = sidx + size;
-                auto eidx_1 = eidx > ReadBufferSize
-                    ? ReadBufferSize
-                    : eidx;
-                size_out += src.read_to(&buffer[sidx], eidx_1 - sidx);
-                if (eidx != eidx_1)
-                {
-                    auto eidx_2 = wrap(eidx);
-                    size_out += src.read_to(&buffer[0], eidx_2);
-                }
-                bytes_used += size;
+                auto eidx_2 = wrap(eidx);
+                size_out += src.read_to(&buffer[0], eidx_2);
             }
+            bytes_used += size_out;
+
             return size_out;
         }
 
