@@ -11,7 +11,9 @@ class IMUData
         static constexpr uint16_t MessageSize =
             1       // Message ID
             + 4*1   // Time
-            + 4*9;  // 9-DoF IMU
+            + 4*4   // IRQ counts
+            + 4*9   // 9-DoF IMU
+            + 4*5;  // Pose quaternion + acc.
         typedef BufferSerializer<MessageSize> Buffer;
 
     public:
@@ -23,9 +25,11 @@ class IMUData
                 .write_syncword()
                 .write(message_id)
                 .write(time)
+                .write(An).write(Gn).write(Mn).write(Qn)
                 .write(Ax).write(Ay).write(Az)
                 .write(Gx).write(Gy).write(Gz)
                 .write(Mx).write(My).write(Mz)
+                .write(Qi).write(Qj).write(Qk).write(Qr).write(Qacc)
                 .write_checksum();
         }
 
@@ -36,9 +40,11 @@ class IMUData
             buffer.read<uint8_t>();  // Message ID.
             buffer
                 .read(time)
+                .read(An).read(Gn).read(Mn).read(Qn)
                 .read(Ax).read(Ay).read(Az)
                 .read(Gx).read(Gy).read(Gz)
-                .read(Mx).read(My).read(Mz);
+                .read(Mx).read(My).read(Mz)
+                .read(Qi).read(Qj).read(Qk).read(Qr).read(Qacc);
             // Checksum.
             return true;
         }
@@ -46,7 +52,9 @@ class IMUData
     public:
         uint32_t time;
 
+        uint32_t An, Gn, Mn, Qn;
         float Ax, Ay, Az;
         float Gx, Gy, Gz;
         float Mx, My, Mz;
+        float Qi, Qj, Qk, Qr, Qacc;
 };
