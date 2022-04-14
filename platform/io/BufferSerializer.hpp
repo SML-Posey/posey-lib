@@ -100,6 +100,13 @@ class BufferSerializer
             return *this;
         }
 
+        template <typename T, int TN>
+        BufferSerializer<N> & write(
+            const T (& data)[TN])
+        {
+            return write(data, TN);
+        }
+
         inline BufferSerializer<N> & write_syncword()
         {
             return write(syncword);
@@ -137,6 +144,12 @@ class BufferSerializer
                     read(data[i]);
             }
             return *this;
+        }
+
+        template <typename T, int TN>
+        BufferSerializer<N> & read(T (& data)[TN])
+        {
+            return read(data, TN);
         }
 
         template <typename T>

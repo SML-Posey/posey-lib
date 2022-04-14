@@ -7,6 +7,7 @@
 bool TaskMain::setup()
 {
     bool success = imu.setup();
+    success &= ble.setup();
     success &= ml.add_listener(cmd);
     return success;
 }
@@ -20,6 +21,7 @@ void TaskMain::loop()
 
     // Update sensor data.
     imu.collect();
+    ble.collect(); // Does nothing.
 
     // Check for messages. Process everything available, we'll
     // let this task overrun.
@@ -33,6 +35,9 @@ void TaskMain::loop()
 
     // Send sensor telemetry.
     imu.write_telemetry(writer);
+
+    // Send BLE telemetry.
+    ble.write_telemetry(writer);
 
     // Send task TM.
     tm.message.t_end = Clock::get_usec<uint32_t>();

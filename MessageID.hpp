@@ -6,6 +6,7 @@ namespace MessageID
 {
     // Sensors.
     constexpr uint8_t IMUData           = 1;    // 0x01
+    constexpr uint8_t BLEData           = 2;    // 0x02
 
     // Control.
     constexpr uint8_t Command           = 40;   // 0x28

@@ -4,6 +4,7 @@
 
 #include "platform/BaseTask.hpp"
 #include "platform/sensors/BaseIMU.hpp"
+#include "platform/sensors/BaseBLE.hpp"
 
 #include "platform/io/BaseMessageReader.hpp"
 #include "platform/io/BaseMessageWriter.hpp"
@@ -63,9 +64,10 @@ class TaskMain : public BaseTask
     public:
         TaskMain(
             BaseIMU & imu,
+            BaseBLE & ble,
             BaseMessageReader & reader,
             BaseMessageWriter & writer) :
-            imu(imu), reader(reader), writer(writer) {}
+            imu(imu), ble(ble), reader(reader), writer(writer) {}
 
         bool setup() override;
         void loop() override;
@@ -75,6 +77,7 @@ class TaskMain : public BaseTask
 
     protected:
         BaseIMU & imu;
+        BaseBLE & ble;
 
         BaseMessageReader & reader;
         BaseMessageWriter & writer;
