@@ -14,10 +14,9 @@ bool TaskMain::setup()
 
 void TaskMain::loop()
 {
-    static uint16_t iter = 0;
-    ++iter;
-
+    static uint32_t loop_time = 1e6/50;
     tm.message.t_start = Clock::get_usec<uint32_t>();
+    tm.message.counter++;
 
     // Update sensor data.
     imu.collect();
@@ -25,13 +24,13 @@ void TaskMain::loop()
 
     // Check for messages. Process everything available, we'll
     // let this task overrun.
-    ml.poll(reader);
-    while (true)
-    {
-        auto mid = ml.process_next();
-        if (mid <= -1) break;
-        process_message(mid);
-    }
+    // ml.poll(reader);
+    // while (true)
+    // {
+    //     auto mid = ml.process_next();
+    //     if (mid <= -1) break;
+    //     process_message(mid);
+    // }
 
     // Send sensor telemetry.
     imu.write_telemetry(writer);
@@ -40,9 +39,13 @@ void TaskMain::loop()
     ble.write_telemetry(writer);
 
     // Send task TM.
-    tm.message.t_end = Clock::get_usec<uint32_t>();
     tm.serialize();
     writer.write(tm.buffer);
+    tm.message.t_end = Clock::get_usec<uint32_t>();
+    if (tm.message.t_end - tm.message.t_start > loop_time)
+    {
+        tm.message.missed_deadline++;
+    }
 }
 
 void TaskMain::process_message(const uint16_t mid)

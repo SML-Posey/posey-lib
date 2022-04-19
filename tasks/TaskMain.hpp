@@ -19,8 +19,10 @@ class TaskMainTelemetry
         static constexpr uint8_t message_id = MessageID::TaskMain;
         static constexpr uint16_t MessageSize =
             1       // Message ID
-            + 4*2   // Times
-            + 1*1;  // Invalid checksum.
+            + 4*1   // Task counter
+            + 4*3   // Times
+            + 1*1   // Invalid checksum
+            + 1*1;  // Missed deadline
         typedef BufferSerializer<MessageSize> Buffer;
 
     public:
@@ -31,8 +33,10 @@ class TaskMainTelemetry
             buffer
                 .write_syncword()
                 .write(message_id)
+                .write(counter)
                 .write(t_start).write(t_end)
                 .write(invalid_checksum)
+                .write(missed_deadline)
                 .write_checksum();
         }
 
@@ -42,25 +46,26 @@ class TaskMainTelemetry
             buffer.read<uint16_t>(); // Syncword.
             buffer.read<uint8_t>();  // Message ID.
             buffer
+                .read(counter)
                 .read(t_start).read(t_end)
-                .read(invalid_checksum);
+                .read(invalid_checksum)
+                .read(missed_deadline);
             // Checksum.
             return true;
         }
 
     public:
+        uint32_t counter = 0;
+
         uint32_t t_start = 0;
         uint32_t t_end = 0;
 
         uint8_t invalid_checksum = 0;
+        uint8_t missed_deadline = 0;
 };
 
 class TaskMain : public BaseTask
 {
-    public:
-        constexpr static float pi = 3.1415926535897;
-        constexpr static float dt = 1.0/25.0;
-
     public:
         TaskMain(
             BaseIMU & imu,
