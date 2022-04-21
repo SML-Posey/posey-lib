@@ -52,9 +52,9 @@ class IMUData
     public:
         uint32_t time;
 
-        uint32_t An, Gn, Mn, Qn;
-        float Ax, Ay, Az;
-        float Gx, Gy, Gz;
-        float Mx, My, Mz;
-        float Qi, Qj, Qk, Qr, Qacc;
+        uint32_t An = 0, Gn = 0, Mn = 0, Qn = 0;
+        float Ax = 0, Ay = 0, Az = 0;
+        float Gx = 0, Gy = 0, Gz = 0;
+        float Mx = 0, My = 0, Mz = 0;
+        float Qi = 0, Qj = 0, Qk = 0, Qr = 0, Qacc = 0;
 };

@@ -62,7 +62,7 @@ class BaseRateLimiter
 
     private:
         Clock clock;
-        Tp period_us;
-        Tp t0_us, t1_us;
-        Td delta_us;
+        Tp period_us = 0;
+        Tp t0_us = 0, t1_us = 0;
+        Td delta_us = 0;
 };

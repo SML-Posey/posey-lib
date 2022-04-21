@@ -32,6 +32,6 @@ class BaseRateMonitor
         inline long get_elapsed_time() const { return elapsed_usec; }
 
     private:
-        long last_time_usec;
-        long elapsed_usec;
+        long last_time_usec = 0;
+        long elapsed_usec = 0;
 };

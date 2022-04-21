@@ -36,5 +36,5 @@ class BaseRateTask
     private:
         BaseTask & task;
         Limiter limiter;
-        unsigned int executions;
+        unsigned int executions = 0;
 };

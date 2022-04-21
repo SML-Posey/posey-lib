@@ -44,8 +44,8 @@ class BLEData
         }
 
     public:
-        uint32_t time;
+        uint32_t time = 0;
 
-        uint8_t addr[ble_addr_len];
-        int8_t rssi;
+        uint8_t addr[ble_addr_len] = {0,0,0,0,0,0};
+        int8_t rssi = 0;
 };
