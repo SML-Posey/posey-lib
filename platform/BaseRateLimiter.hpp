@@ -40,7 +40,7 @@ class BaseRateLimiter
         void delay_remaining()
         {
             Clock::set_usec(t1_us);
-            auto us = t1_us - t0_us;
+            Tp us = t1_us - t0_us;
             if (us < period_us)
                 Clock::delay_usec(period_us - us);
         }

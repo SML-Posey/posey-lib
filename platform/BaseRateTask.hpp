@@ -22,7 +22,8 @@ class BaseRateTask
 
         bool loop()
         {
-            if (limiter.run())
+            bool time_to_run = limiter.run();
+            if (time_to_run)
             {
                 task.loop();
                 ++executions;
@@ -30,7 +31,7 @@ class BaseRateTask
 
             limiter.delay_remaining();
 
-            return true;
+            return time_to_run;
         }
 
     private:
