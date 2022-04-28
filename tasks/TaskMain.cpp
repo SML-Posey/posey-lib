@@ -14,7 +14,7 @@ bool TaskMain::setup()
 
 void TaskMain::loop()
 {
-    static uint32_t loop_time = 1e6/80;
+    static uint32_t loop_time = 1e6/50;
     tm.message.t_start = Clock::get_usec<uint32_t>();
     tm.message.counter++;
 
