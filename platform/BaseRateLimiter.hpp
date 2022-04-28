@@ -1,5 +1,10 @@
 #pragma once
 
+#include <limits>
+
+#include <zephyr.h>
+#include <sys/printk.h>
+
 template <class Clock, class Tp, class Td>
 class BaseRateLimiter
 {
@@ -31,23 +36,28 @@ class BaseRateLimiter
             Clock::set_usec(t0_us);
         }
 
-        Td remaining()
+        template <typename T>
+        T remaining()
         {
             Clock::set_usec(t1_us);
-            return static_cast<Td>(period_us) - static_cast<Td>(t1_us) + static_cast<Td>(t0_us);
+            Tp dt = t1_us - t0_us;
+            if (t1_us < t0_us)
+                dt = std::numeric_limits<Tp>::max() - t1_us + t0_us;
+            if (period_us < dt)
+                return static_cast<T>(0);
+            else return static_cast<T>(period_us - dt);
         }
 
         void delay_remaining()
         {
-            Clock::set_usec(t1_us);
-            Tp us = t1_us - t0_us;
-            if (us < period_us)
-                Clock::delay_usec(period_us - us);
+            Tp remaining_us = remaining<Tp>();
+            if (remaining_us > 0)
+                Clock::delay_usec(remaining_us);
         }
 
         bool run()
         {
-            delta_us = remaining();
+            delta_us = remaining<Td>();
             if (delta_us <= 0)
             {
                 t0_us = t1_us;
