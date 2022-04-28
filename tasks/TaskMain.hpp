@@ -20,7 +20,7 @@ class TaskMainTelemetry
         static constexpr uint16_t MessageSize =
             1       // Message ID
             + 4*1   // Task counter
-            + 4*3   // Times
+            + 4*2   // Times
             + 1*1   // Invalid checksum
             + 1*1;  // Missed deadline
         typedef BufferSerializer<MessageSize> Buffer;
