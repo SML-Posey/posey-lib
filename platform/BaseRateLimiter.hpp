@@ -2,9 +2,6 @@
 
 #include <limits>
 
-#include <zephyr.h>
-#include <sys/printk.h>
-
 template <class Clock, class Tp, class Td>
 class BaseRateLimiter
 {
