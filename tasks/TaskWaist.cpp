@@ -29,6 +29,10 @@ void TaskMain::loop()
         }
     }
 
+    // // Update sensor data.
+    // imu.collect();
+    // ble.collect(); // Does nothing.
+
     // Check for messages. Process everything available, we'll
     // let this task overrun.
     ml.poll(reader);
@@ -70,7 +74,6 @@ void TaskMain::process_message(const uint16_t mid)
             switch (msg.command)
             {
                 case Command::Configure:
-
                 case Command::NoOp:
                 default:
                     break;
