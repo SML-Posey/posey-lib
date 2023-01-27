@@ -6,18 +6,48 @@
 class Command
 {
     public:
-        enum Commands
+        const MaxPayload = 60;
+
+        enum Command
         {
-            NoOp,           //
+            Configure           = 0x01,     // Configure(params)
+            ConnectPeripheral   = 0x02,     // ConnectPeripheral(device, slot)
+            Reboot              = 0x03,     // Reboot()
+
+            DownloadData        = 0x11,     // DownloadData() -> Download packets
+
+            StartCollecting     = 0x21,     // StartCollecting(date/time)
+            StopCollecting      = 0x22,     // StopCollecting
+
+            NoOp                = 0xFF
         };
+
+        static const char * Command_to_string(const Command::Command cmd)
+        {
+            switch (cmd)
+            {
+                case Configure: return "Configure";
+
+                case GetStats: return "GetStats";
+                case GetData: return "GetData";
+                case ConnectPeripheral: return "ConnectPeripheral";
+
+                case StartCollecting: return "StartCollecting";
+                case StopCollecting: return "StopCollecting";
+
+                case NoOp: return "NoOp";
+
+                default: return "Unknown";
+            }
+        }
 
     public:
         static constexpr uint8_t message_id = MessageID::Command;
         static constexpr uint16_t MessageSize =
-            1           // message_id
-            + 1         // command
-            + 4*3       // args
-            + 1         // ACK
+            1               // message_id
+            + 1             // command
+            + 1*MaxPayload  // payload
+            + 1             // ACK
             ;
         typedef BufferSerializer<MessageSize> Buffer;
 
@@ -30,7 +60,7 @@ class Command
                 .write_syncword()
                 .write(message_id)
                 .write(command)
-                .write(arg1).write(arg2).write(arg3)
+                .write(payload)
                 .write(ack)
                 .write_checksum();
         }
@@ -42,7 +72,7 @@ class Command
             buffer.read<uint8_t>();  // Message ID.
             buffer
                 .read(command)
-                .read(arg1).read(arg2).read(arg3)
+                .read(payload)
                 .read(ack);
             // Checksum.
             return true;
@@ -50,10 +80,6 @@ class Command
 
     public:
         uint8_t command;
-
-        float arg1;
-        float arg2;
-        float arg3;
-
+        uint8_t payload;
         uint8_t ack;
 };

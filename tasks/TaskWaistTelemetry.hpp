@@ -2,21 +2,26 @@
 
 #include "MessageID.hpp"
 
-#include "platform/BaseTask.hpp"
-#include "platform/sensors/BaseIMU.hpp"
-#include "platform/sensors/BaseBLE.hpp"
+#include "platform/io/BufferSerializer.hpp"
 
-#include "platform/io/BaseMessageReader.hpp"
-#include "platform/io/BaseMessageWriter.hpp"
-#include "platform/io/MessageListener.hpp"
-#include "platform/io/BufferMessagePair.hpp"
+enum class PeripheralSlot
+{
+    Waist = 0,
+    LeftWrist = 1,
+    RightWrist = 2,
+    Ring = 3
+};
 
-#include "control/Command.hpp"
+struct PeripheralConnection
+{
+    char name[11];
+    uint8_t status;
+};
 
-class TaskMainTelemetry
+class TaskWaistTelemetry
 {
     public:
-        static constexpr uint8_t message_id = MessageID::TaskMain;
+        static constexpr uint8_t message_id = MessageID::Task;
         static constexpr uint16_t MessageSize =
             1       // Message ID
             + 4*1   // Task counter
@@ -62,33 +67,4 @@ class TaskMainTelemetry
 
         uint8_t invalid_checksum = 0;
         uint8_t missed_deadline = 0;
-};
-
-class TaskMain : public BaseTask
-{
-    public:
-        TaskMain(
-            BaseIMU & imu,
-            BaseBLE & ble,
-            BaseMessageReader & reader,
-            BaseMessageWriter & writer) :
-            imu(imu), ble(ble), reader(reader), writer(writer) {}
-
-        bool setup() override;
-        void loop() override;
-
-    protected:
-        void process_message(const uint16_t mid);
-
-    protected:
-        BaseIMU & imu;
-        BaseBLE & ble;
-
-        BaseMessageReader & reader;
-        BaseMessageWriter & writer;
-        MessageListener<1, 50> ml;
-
-        // Messages handled.
-        BufferMessagePair<TaskMainTelemetry> tm;
-        BufferMessagePair<Command> cmd; // <->
 };

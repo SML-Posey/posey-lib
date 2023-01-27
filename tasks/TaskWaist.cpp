@@ -14,35 +14,42 @@ bool TaskMain::setup()
 
 void TaskMain::loop()
 {
-    static uint32_t loop_time = 1e6/50;
+    static const uint32_t max_loop_time = 1e6/50;
+    static uint32_t iter = 0;
+
     tm.message.t_start = Clock::get_usec<uint32_t>();
     tm.message.counter++;
 
-    // Update sensor data.
-    imu.collect();
-    ble.collect(); // Does nothing.
+    // For each active connection, collect IMU sensor data and RSSI.
+    for (int i = 0; i < MaxPeripherals; ++i)
+    {
+        if (peripherals[i].collect_data())
+        {
+            // Store.
+        }
+    }
 
     // Check for messages. Process everything available, we'll
     // let this task overrun.
-    // ml.poll(reader);
-    // while (true)
-    // {
-    //     auto mid = ml.process_next();
-    //     if (mid <= -1) break;
-    //     process_message(mid);
-    // }
-
-    // Send sensor telemetry.
-    imu.write_telemetry(writer);
-
-    // Send BLE telemetry.
-    ble.write_telemetry(writer);
+    ml.poll(reader);
+    while (true)
+    {
+        auto mid = ml.process_next();
+        if (mid <= -1) break;
+        process_message(mid);
+    }
 
     // Send task TM.
-    tm.serialize();
-    writer.write(tm.buffer);
+    if (iter % 50 == 0)
+    {
+        tm.serialize();
+        writer.write(tm.buffer);
+    }
+    ++iter;
+
+    // Update missed deadlines if needed.
     tm.message.t_end = Clock::get_usec<uint32_t>();
-    if (tm.message.t_end - tm.message.t_start > loop_time)
+    if (tm.message.t_end - tm.message.t_start > max_loop_time)
     {
         tm.message.missed_deadline++;
     }
@@ -62,6 +69,8 @@ void TaskMain::process_message(const uint16_t mid)
 
             switch (msg.command)
             {
+                case Command::Configure:
+
                 case Command::NoOp:
                 default:
                     break;
