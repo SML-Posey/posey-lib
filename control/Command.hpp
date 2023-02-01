@@ -6,9 +6,9 @@
 class Command
 {
     public:
-        const MaxPayload = 60;
+        static constexpr int MaxPayload = 60;
 
-        enum Command
+        enum CommandType
         {
             Configure           = 0x01,     // Configure(params)
             ConnectPeripheral   = 0x02,     // ConnectPeripheral(device, slot)
@@ -22,15 +22,15 @@ class Command
             NoOp                = 0xFF
         };
 
-        static const char * Command_to_string(const Command::Command cmd)
+        static const char * Command_to_string(const CommandType cmd)
         {
             switch (cmd)
             {
                 case Configure: return "Configure";
-
-                case GetStats: return "GetStats";
-                case GetData: return "GetData";
                 case ConnectPeripheral: return "ConnectPeripheral";
+                case Reboot: return "Reboot";
+
+                case DownloadData: return "DownloadData";
 
                 case StartCollecting: return "StartCollecting";
                 case StopCollecting: return "StopCollecting";

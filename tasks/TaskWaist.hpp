@@ -15,7 +15,7 @@
 
 #include "control/Command.hpp"
 
-#include "platform/tasks/TaskWaistTelemetry.hpp"
+#include "tasks/TaskWaistTelemetry.hpp"
 
 class TaskWaist : public BaseTask
 {
@@ -37,7 +37,7 @@ class TaskWaist : public BaseTask
         BaseIMU & imu;
         BaseBLE & ble;
 
-        PeripheralConnection peripherals[4];
+        // PeripheralConnection peripherals[4];
 
         BaseMessageReader & reader;
         BaseMessageWriter & writer;

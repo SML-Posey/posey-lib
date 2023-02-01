@@ -1,10 +1,10 @@
 #include "platform.hpp"
 
-#include "tasks/TaskMain.hpp"
+#include "tasks/TaskWaist.hpp"
 
 #include "MessageAck.hpp"
 
-bool TaskMain::setup()
+bool TaskWaist::setup()
 {
     bool success = imu.setup();
     success &= ble.setup();
@@ -12,7 +12,7 @@ bool TaskMain::setup()
     return success;
 }
 
-void TaskMain::loop()
+void TaskWaist::loop()
 {
     static const uint32_t max_loop_time = 1e6/50;
     static uint32_t iter = 0;
@@ -21,9 +21,10 @@ void TaskMain::loop()
     tm.message.counter++;
 
     // For each active connection, collect IMU sensor data and RSSI.
+    static const int MaxPeripherals = 4;
     for (int i = 0; i < MaxPeripherals; ++i)
     {
-        if (peripherals[i].collect_data())
+        //if (peripherals[i].collect_data())
         {
             // Store.
         }
@@ -59,7 +60,7 @@ void TaskMain::loop()
     }
 }
 
-void TaskMain::process_message(const uint16_t mid)
+void TaskWaist::process_message(const uint16_t mid)
 {
     bool invalid_checksum = false;
 
