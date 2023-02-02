@@ -3,20 +3,7 @@
 #include "MessageID.hpp"
 
 #include "platform/io/BufferSerializer.hpp"
-
-enum class PeripheralSlot
-{
-    Waist = 0,
-    LeftWrist = 1,
-    RightWrist = 2,
-    Ring = 3
-};
-
-struct PeripheralConnection
-{
-    char name[11];
-    uint8_t status;
-};
+#include "platform/hardware/PeripheralConnection.hpp"
 
 class TaskWaistTelemetry
 {
