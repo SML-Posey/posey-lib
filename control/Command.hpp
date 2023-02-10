@@ -14,6 +14,7 @@ class Command
             ConnectPeripheral   = 0x02,     // ConnectPeripheral(device, slot)
             Reboot              = 0x03,     // Reboot()
 
+            GetDataSummary      = 0x10,     // -> Collection date/time, size.
             DownloadData        = 0x11,     // DownloadData() -> Download packets
 
             StartCollecting     = 0x21,     // StartCollecting(date/time)
@@ -30,6 +31,7 @@ class Command
                 case ConnectPeripheral: return "ConnectPeripheral";
                 case Reboot: return "Reboot";
 
+                case GetDataSummary: return "GetDataSummary";
                 case DownloadData: return "DownloadData";
 
                 case StartCollecting: return "StartCollecting";
@@ -39,6 +41,11 @@ class Command
 
                 default: return "Unknown";
             }
+        }
+
+        static const char * Command_to_string(const uint8_t cmd)
+        {
+            return Command_to_string(static_cast<CommandType>(cmd));
         }
 
     public:
@@ -77,6 +84,8 @@ class Command
             // Checksum.
             return true;
         }
+
+        const char * command_str() const { return Command_to_string(command); }
 
     public:
         uint8_t command;

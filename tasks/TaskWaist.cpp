@@ -4,6 +4,11 @@
 
 #include "MessageAck.hpp"
 
+#include <zephyr/logging/log.h>
+
+#define LOG_MODULE_NAME posey_task_hub
+LOG_MODULE_REGISTER(LOG_MODULE_NAME);
+
 bool TaskWaist::setup()
 {
     bool success = imu.setup();
@@ -71,6 +76,8 @@ void TaskWaist::process_message(const uint16_t mid)
         if (cmd.valid_checksum())
         {
             auto & msg = cmd.deserialize();
+
+            LOG_INF("Received %s command", msg.command_str());
 
             switch (msg.command)
             {
