@@ -8,7 +8,7 @@
 class TaskWaistTelemetry
 {
     public:
-        static constexpr uint8_t message_id = MessageID::Task;
+        static constexpr uint8_t message_id = MessageID::TaskWaist;
         static constexpr uint16_t MessageSize =
             1       // Message ID
             + 4*1   // Task counter

@@ -8,7 +8,7 @@
 #include "platform/io/BaseMessageWriter.hpp"
 #include "platform/io/BufferMessagePair.hpp"
 
-#include "tasks/TaskTelemetry.hpp"
+#include "tasks/TaskWatchTelemetry.hpp"
 
 class TaskWatch : public BaseTask
 {
@@ -30,5 +30,5 @@ class TaskWatch : public BaseTask
         BaseMessageWriter & writer;
 
         // Messages handled.
-        BufferMessagePair<TaskTelemetry> tm;
+        BufferMessagePair<TaskWatchTelemetry> tm;
 };
