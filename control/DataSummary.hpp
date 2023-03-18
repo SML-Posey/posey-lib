@@ -3,15 +3,17 @@
 #include "MessageID.hpp"
 #include "platform/io/BufferSerializer.hpp"
 
-class DataStatsMessage
+class DataSummary
 {
     public:
-        static constexpr uint8_t message_id = MessageID::Command;
+        static constexpr int MaxDatetimeSize = 30;
+
+        static constexpr uint8_t message_id = MessageID::DataSummary;
         static constexpr uint16_t MessageSize =
             1           // message_id
-            + 1         // command
-            + 4*3       // args
-            + 1         // ACK
+            + 1*MaxDatetimeSize  // datetime
+            + 2*4       // Start / end time (32-bit)
+            + 1*4       // Data bytes (32-bit)
             ;
         typedef BufferSerializer<MessageSize> Buffer;
 
@@ -23,9 +25,10 @@ class DataStatsMessage
             buffer
                 .write_syncword()
                 .write(message_id)
-                .write(command)
-                .write(arg1).write(arg2).write(arg3)
-                .write(ack)
+                .write(datetime)
+                .write(start_ms)
+                .write(end_ms)
+                .write(bytes)
                 .write_checksum();
         }
 
@@ -35,19 +38,17 @@ class DataStatsMessage
             buffer.read<uint16_t>(); // Syncword.
             buffer.read<uint8_t>();  // Message ID.
             buffer
-                .read(command)
-                .read(arg1).read(arg2).read(arg3)
-                .read(ack);
+                .read(datetime)
+                .read(start_ms)
+                .read(end_ms)
+                .read(bytes);
             // Checksum.
             return true;
         }
 
     public:
-        uint8_t command;
-
-        float arg1;
-        float arg2;
-        float arg3;
-
-        uint8_t ack;
+        uint8_t datetime[MaxDatetimeSize];
+        uint32_t start_ms;
+        uint32_t end_ms;
+        uint32_t bytes;
 };

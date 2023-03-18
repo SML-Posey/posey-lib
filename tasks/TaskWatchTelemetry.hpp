@@ -13,7 +13,9 @@ class TaskWatchTelemetry
             + 4*1   // Task counter
             + 4*2   // Times
             + 1*1   // Invalid checksum
-            + 1*1;  // Missed deadline
+            + 1*1   // Missed deadline
+            + 4*1   // Battery voltage.
+            ;
         typedef BufferSerializer<MessageSize> Buffer;
 
     public:
@@ -28,6 +30,7 @@ class TaskWatchTelemetry
                 .write(t_start).write(t_end)
                 .write(invalid_checksum)
                 .write(missed_deadline)
+                .write(Vbatt)
                 .write_checksum();
         }
 
@@ -40,7 +43,8 @@ class TaskWatchTelemetry
                 .read(counter)
                 .read(t_start).read(t_end)
                 .read(invalid_checksum)
-                .read(missed_deadline);
+                .read(missed_deadline)
+                .read(Vbatt);
             // Checksum.
             return true;
         }
@@ -53,4 +57,6 @@ class TaskWatchTelemetry
 
         uint8_t invalid_checksum = 0;
         uint8_t missed_deadline = 0;
+
+        float Vbatt = 0;
 };

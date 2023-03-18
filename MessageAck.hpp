@@ -10,4 +10,5 @@ namespace MessageAck
     constexpr uint8_t OK            = 0xB8;
     constexpr uint8_t Resend        = 0xC7;
     constexpr uint8_t Error         = 0xD6;
+    constexpr uint8_t Working       = 0xE5;
 }

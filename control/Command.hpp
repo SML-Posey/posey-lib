@@ -89,6 +89,6 @@ class Command
 
     public:
         uint8_t command;
-        uint8_t payload;
+        uint8_t payload[MaxPayload];
         uint8_t ack;
 };

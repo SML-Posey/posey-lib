@@ -12,7 +12,8 @@ namespace MessageID
     // Control.
     constexpr uint8_t Command           = 40;   // 0x28
 
-    constexpr uint8_t DataDownloadPacket = 50;      // 0x32
+    constexpr uint8_t DataSummary       = 50;   // 0x32
+    constexpr uint8_t DataPacket        = 51;   // 0x33
 
     // Tasks.
     constexpr uint8_t Task              = 200;  // 0xC8

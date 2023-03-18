@@ -18,6 +18,11 @@ class BaseHardwareInterface
             return writer.write(buffer);
         }
 
+        virtual void serialize()
+        {
+            data.serialize(buffer);
+        }
+
     public:
         DataType data;
         typename DataType::Buffer buffer;

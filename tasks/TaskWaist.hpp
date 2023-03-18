@@ -14,6 +14,7 @@
 #include "platform/hardware/PeripheralConnection.hpp"
 
 #include "control/Command.hpp"
+#include "control/DataSummary.hpp"
 
 #include "tasks/TaskWaistTelemetry.hpp"
 
@@ -45,5 +46,6 @@ class TaskWaist : public BaseTask
 
         // Messages handled.
         BufferMessagePair<TaskWaistTelemetry> tm;
+        BufferMessagePair<DataSummary> tm_data_summary;
         BufferMessagePair<Command> cmd; // <->
 };
