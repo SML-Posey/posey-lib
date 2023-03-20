@@ -5,6 +5,7 @@
 
 #include "MessageAck.hpp"
 
+#ifdef ZEPHYR
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/reboot.h>
 
@@ -12,6 +13,38 @@
 
 #define LOG_MODULE_NAME posey_task_hub
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
+#else
+    #define LOG_INF(...);
+    #define LOG_WRN(...);
+
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
+
+    int init_nus() { return 0; }
+
+    bool init_flash() { return true; }
+    bool erase_flash(const uint32_t size) { return true; }
+    bool erase_used_flash() { return true; }
+    bool erase_all_flash() { return true; }
+
+    bool flash_is_logging() { return true; }
+    void start_flash_logging() { }
+    void stop_flash_logging() { }
+
+    uint32_t flash_log_size();
+
+    void process_data(
+        void * conn,
+        const uint8_t slot,
+        const uint8_t * data,
+        const uint16_t size);
+
+    #ifdef __cplusplus
+    }
+    #endif
+
+#endif
 
 bool TaskWaist::setup()
 {
@@ -105,8 +138,8 @@ void TaskWaist::process_message(const uint16_t mid)
             {
                 case Command::Reboot:
                     LOG_INF("Waiting 5s then rebooting.");
-                    k_sleep(K_SECONDS(5));
-                    sys_reboot(SYS_REBOOT_COLD);
+                    Clock::delay_msec(5000);
+                    // sys_reboot(SYS_REBOOT_COLD);
                     break;
                 
                 case Command::GetDataSummary:
