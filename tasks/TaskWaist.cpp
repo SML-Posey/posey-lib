@@ -5,7 +5,7 @@
 
 #include "MessageAck.hpp"
 
-#ifdef ZEPHYR
+#if defined(CONFIG_LOG)
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/reboot.h>
 
@@ -91,7 +91,7 @@ void TaskWaist::loop()
     if (iter % 50 == 0)
     {
         tm.serialize();
-        writer.write(tm.buffer);
+        writer.write(tm.buffer, writer.SendNow);
     }
     ++iter;
 
@@ -118,7 +118,7 @@ void TaskWaist::process_message(const uint16_t mid)
                 cmd.message.ack = MessageAck::Working;
             else cmd.message.ack = MessageAck::OK;
             cmd.serialize();
-            writer.write(cmd);
+            writer.write(cmd, writer.SendNow);
 
             LOG_INF("Received %s command", msg.command_str());
 
@@ -154,7 +154,7 @@ void TaskWaist::process_message(const uint16_t mid)
 
                     LOG_INF("Sending summary packet.");
                     tm_data_summary.serialize();
-                    writer.write(tm_data_summary);
+                    writer.write(tm_data_summary, writer.SendNow);
 
                     break;
                 
@@ -186,7 +186,7 @@ void TaskWaist::process_message(const uint16_t mid)
                     // Send ack.
                     cmd.message.ack = MessageAck::OK;
                     cmd.serialize();
-                    writer.write(cmd);
+                    writer.write(cmd, writer.SendNow);
 
                     break;
                 
@@ -209,7 +209,7 @@ void TaskWaist::process_message(const uint16_t mid)
             invalid_checksum = true;
             cmd.message.ack = MessageAck::Resend;
             cmd.serialize();
-            writer.write(cmd);
+            writer.write(cmd, writer.SendNow);
         }
     }
 
