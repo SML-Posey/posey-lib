@@ -7,13 +7,14 @@
 class BLEData
 {
     public:
-        static constexpr uint8_t ble_addr_len = 6;
+        static constexpr uint8_t uuid_len = 16;
         static constexpr uint8_t message_id = MessageID::BLEData;
         static constexpr uint16_t MessageSize =
             1       // Message ID
             + 4*1   // Time
-            + ble_addr_len*1   // Bluetooth address
-            + 1*1;  // RSSI.
+            + uuid_len*1   // UUID
+            + 2*2   // Major, minor
+            + 1*2;  // Power, RSSI.
         typedef BufferSerializer<MessageSize> Buffer;
 
     public:
@@ -25,7 +26,10 @@ class BLEData
                 .write_syncword()
                 .write(message_id)
                 .write(time)
-                .write(addr)
+                .write(uuid)
+                .write(major)
+                .write(minor)
+                .write(power)
                 .write(rssi)
                 .write_checksum();
         }
@@ -37,7 +41,10 @@ class BLEData
             buffer.read<uint8_t>();  // Message ID.
             buffer
                 .read(time)
-                .read(addr)
+                .read(uuid)
+                .read(major)
+                .read(minor)
+                .read(power)
                 .read(rssi);
             // Checksum.
             return true;
@@ -46,6 +53,9 @@ class BLEData
     public:
         uint32_t time = 0;
 
-        uint8_t addr[ble_addr_len] = {0,0,0,0,0,0};
+        uint8_t uuid[uuid_len];
+        uint16_t major = 0;
+        uint16_t minor = 0;
+        int8_t power = 0;
         int8_t rssi = 0;
 };
