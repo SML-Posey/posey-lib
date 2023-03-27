@@ -16,6 +16,7 @@ class Command
 
             GetDataSummary      = 0x10,     // -> Collection date/time, size.
             DownloadData        = 0x11,     // DownloadData() -> Download packets
+            FullFlashErase      = 0x12,     //
 
             StartCollecting     = 0x21,     // StartCollecting(date/time)
             StopCollecting      = 0x22,     // StopCollecting
@@ -33,6 +34,7 @@ class Command
 
                 case GetDataSummary: return "GetDataSummary";
                 case DownloadData: return "DownloadData";
+                case FullFlashErase: return "FullFlashErase";
 
                 case StartCollecting: return "StartCollecting";
                 case StopCollecting: return "StopCollecting";

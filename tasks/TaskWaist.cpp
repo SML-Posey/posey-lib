@@ -56,6 +56,7 @@ bool TaskWaist::setup()
 
 void TaskWaist::loop()
 {
+    #if defined(CONFIG_ROLE_HUB)
     static const uint32_t max_loop_time = 1e6/50;
     static uint32_t iter = 0;
 
@@ -101,10 +102,12 @@ void TaskWaist::loop()
     {
         tm.message.missed_deadline++;
     }
+    #endif
 }
 
 void TaskWaist::process_message(const uint16_t mid)
 {
+    #if defined(CONFIG_ROLE_HUB)
     bool invalid_checksum = false;
 
     // Command message?
@@ -114,32 +117,45 @@ void TaskWaist::process_message(const uint16_t mid)
         if (cmd.valid_checksum())
         {
             auto & msg = cmd.deserialize();
-            if (msg.command == Command::StartCollecting)
+            if (
+                (msg.command == Command::StartCollecting) ||
+                (msg.command == Command::DownloadData) ||
+                (msg.command == Command::FullFlashErase))
+            {
                 cmd.message.ack = MessageAck::Working;
+            }
             else cmd.message.ack = MessageAck::OK;
             cmd.serialize();
             writer.write(cmd, writer.SendNow);
 
             LOG_INF("Received %s command", msg.command_str());
+            LOG_INF("  - Logging to flash? %s",
+                flash_is_logging() ? "YES" : "NO");
 
             // Need to stop logging?
             bool need_to_stop_logging =
                 (msg.command == Command::Reboot)
                 || (msg.command == Command::DownloadData)
-                || (msg.command == Command::StopCollecting);
+                || (msg.command == Command::StopCollecting)
+                || (msg.command == Command::FullFlashErase);
             if (need_to_stop_logging && flash_is_logging())
             {
                 stop_flash_logging();
                 config_update_data_end_ms(Clock::get_msec<uint32_t>());
+                refresh_device_config();
             }
 
             // Handle command.
             switch (msg.command)
             {
+                case Command::NoOp:
+                    LOG_WRN("No operation!");
+                    break;
+
                 case Command::Reboot:
                     LOG_INF("Waiting 5s then rebooting.");
                     Clock::delay_msec(5000);
-                    // sys_reboot(SYS_REBOOT_COLD);
+                    sys_reboot(SYS_REBOOT_COLD);
                     break;
                 
                 case Command::GetDataSummary:
@@ -161,7 +177,26 @@ void TaskWaist::process_message(const uint16_t mid)
                 case Command::DownloadData:
                     // Send data.
                     LOG_INF("Initiating data download.");
+
+                    // Fake delay (ATW: TODO: Implement :-))
+                    Clock::delay_msec(2000);
+
+                    // Send message indicating we're finished.
+                    cmd.message.ack = MessageAck::OK;
+                    cmd.serialize();
+                    writer.write(cmd, writer.SendNow);
+                    
                     break;
+
+                case Command::FullFlashErase:
+                    // Reset all FLASH.
+                    LOG_INF("Erasing ALL flash, might take a bit...");
+                    erase_all_flash();
+
+                    // Send ack.
+                    cmd.message.ack = MessageAck::OK;
+                    cmd.serialize();
+                    writer.write(cmd, writer.SendNow);
                 
                 case Command::StartCollecting:
                     // Initiate logging start.
@@ -170,6 +205,7 @@ void TaskWaist::process_message(const uint16_t mid)
                     config_update_data_end_ms(Clock::get_msec<uint32_t>());
                     config_update_data_start_ms(Clock::get_msec<uint32_t>());
                     config_update_data_end(0);
+                    refresh_device_config();
                     memcpy(
                         tm_data_summary.message.datetime,
                         device_config.data_dt,
@@ -196,13 +232,15 @@ void TaskWaist::process_message(const uint16_t mid)
 
                 case Command::Configure:
                 case Command::ConnectPeripheral:
-                case Command::NoOp:
                     LOG_WRN("Not implemented.");
                     break;
                 default:
                     LOG_WRN("Unknown command");
                     break;
             }
+
+            LOG_INF("  - Still to flash? %s; Data end: %d",
+                flash_is_logging() ? "YES" : "NO", device_config.data_end);
         }
         else
         {
@@ -218,4 +256,5 @@ void TaskWaist::process_message(const uint16_t mid)
     {
         tm.message.invalid_checksum++;
     }
+    #endif
 }

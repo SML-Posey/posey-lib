@@ -42,7 +42,7 @@ class TaskWaist : public BaseTask
 
         BaseMessageReader & reader;
         BaseMessageWriter & writer;
-        MessageListener<1, 50> ml;
+        MessageListener<1, 200> ml;
 
         // Messages handled.
         BufferMessagePair<TaskWaistTelemetry> tm;

@@ -19,6 +19,7 @@ typedef struct {
 } DeviceConfig;
 extern DeviceConfig device_config;
 
+void refresh_device_config();
 void config_update_data_dt(const char * dt);
 void config_update_data_start_ms(const uint32_t offset);
 void config_update_data_end_ms(const uint32_t offset);
