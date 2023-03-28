@@ -33,6 +33,7 @@ class TaskWaist : public BaseTask
 
     protected:
         void process_message(const uint16_t mid);
+        bool send_log_data();
 
     protected:
         BaseIMU & imu;

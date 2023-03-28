@@ -105,6 +105,63 @@ void TaskWaist::loop()
     #endif
 }
 
+bool TaskWaist::send_log_data()
+{
+    static constexpr uint16_t nus_buffer_size = 244;
+    static uint8_t buffer[nus_buffer_size];
+    uint32_t log_size = flash_log_size();
+    int32_t to_send = log_size;
+    LOG_INF("Starting download of %d bytes, %.2f MB",
+        to_send, to_send/1024.0/1024.0);
+    uint32_t cursor = 0;
+    int iter = 0;
+    struct bt_conn * pc_conn = get_pc_connection();
+    if (!pc_conn)
+    {
+        LOG_ERR("PC seems to have been disconnected.");
+        return false;
+    }
+    uint32_t t0 = Clock::get_msec<uint32_t>();
+    uint32_t b0 = 0;
+    while (to_send > 0)
+    {
+        to_send -= nus_buffer_size;
+        uint32_t send_size = nus_buffer_size;
+        if (to_send < 0) send_size += to_send;
+        uint32_t read_size = read_flash(
+            cursor, buffer, send_size);
+        cursor += read_size;
+        if (read_size != send_size)
+        {
+            LOG_ERR("Read only %d of %d bytes! Bailing download.", read_size, send_size);
+            return false;
+        }
+        int rc = bt_nus_send(pc_conn, buffer, send_size);
+        if (rc != 0)
+        {
+            LOG_ERR("Failed to send NUS buffer! %d", rc);
+            return false;
+        }
+        // Clock::delay_msec(10);
+
+        if ((iter++ % 1000) == 0)
+        {
+            uint32_t t1 = Clock::get_msec<uint32_t>();
+            uint32_t b1 = cursor;
+            LOG_INF("Left to send: %.2f of %.2f MB (%.2f%%, %.2f KBps)",
+                to_send/1024.0/1024.0,
+                log_size/1024.0/1024.0,
+                100.0*to_send/log_size,
+                (b1 - b0)/1024.0/(t1 - t0)*1000.0);
+            b0 = b1;
+            t0 = t1;
+        }
+    }
+
+    LOG_INF("Finished download!");
+    return true;
+}
+
 void TaskWaist::process_message(const uint16_t mid)
 {
     #if defined(CONFIG_ROLE_HUB)
@@ -127,6 +184,7 @@ void TaskWaist::process_message(const uint16_t mid)
             else cmd.message.ack = MessageAck::OK;
             cmd.serialize();
             writer.write(cmd, writer.SendNow);
+            Clock::delay_msec(500);
 
             LOG_INF("Received %s command", msg.command_str());
             LOG_INF("  - Logging to flash? %s",
@@ -177,12 +235,13 @@ void TaskWaist::process_message(const uint16_t mid)
                 case Command::DownloadData:
                     // Send data.
                     LOG_INF("Initiating data download.");
+                    cmd.message.ack = MessageAck::OK;
 
-                    // Fake delay (ATW: TODO: Implement :-))
-                    Clock::delay_msec(2000);
+                    // Send out all flash data.
+                    if (!send_log_data())
+                        cmd.message.ack = MessageAck::Error;
 
                     // Send message indicating we're finished.
-                    cmd.message.ack = MessageAck::OK;
                     cmd.serialize();
                     writer.write(cmd, writer.SendNow);
                     
@@ -197,6 +256,8 @@ void TaskWaist::process_message(const uint16_t mid)
                     cmd.message.ack = MessageAck::OK;
                     cmd.serialize();
                     writer.write(cmd, writer.SendNow);
+
+                    break;
                 
                 case Command::StartCollecting:
                     // Initiate logging start.
