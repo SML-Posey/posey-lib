@@ -12,6 +12,7 @@ class FlashBlockData
             1       // Message ID
             + 4*1   // Time
             + 1     // Slot
+            + 6     // MAC
             + 1     // rssi
             + 2;    // block bytes
         typedef BufferSerializer<MessageSize> Buffer;
@@ -24,8 +25,9 @@ class FlashBlockData
             buffer
                 .write_syncword()
                 .write(message_id)
-                .write(time)
+                .write(time_ms)
                 .write(slot)
+                .write(mac)
                 .write(rssi)
                 .write(block_bytes)
                 .write_checksum();
@@ -37,8 +39,9 @@ class FlashBlockData
             buffer.read<uint16_t>(); // Syncword.
             buffer.read<uint8_t>();  // Message ID.
             buffer
-                .read(time)
+                .read(time_ms)
                 .read(slot)
+                .read(mac)
                 .read(rssi)
                 .read(block_bytes);
             // Checksum.
@@ -46,8 +49,9 @@ class FlashBlockData
         }
 
     public:
-        uint32_t time = 0;
+        uint32_t time_ms = 0;
         uint8_t slot = 0;
+        uint8_t mac[6] = {0,0,0,0,0,0};
         int8_t rssi = 0;
         uint16_t block_bytes = 0;
 };

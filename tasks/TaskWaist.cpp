@@ -57,11 +57,10 @@ bool TaskWaist::setup()
 void TaskWaist::loop()
 {
     #if defined(CONFIG_ROLE_HUB)
-    static const uint32_t max_loop_time = 1e6/50;
+    static const uint32_t max_loop_time = 1e3/50;
     static uint32_t iter = 0;
 
-    tm.message.t_start = Clock::get_usec<uint32_t>();
-    tm.message.counter++;
+    tm.message.t_start_ms = Clock::get_msec<uint32_t>();
 
     // // Update sensor data.
     imu.collect();
@@ -69,13 +68,13 @@ void TaskWaist::loop()
 
     // Serialize data and store to flash.
     imu.serialize();
-    process_data(NULL, 255, imu.buffer.get_buffer(), imu.buffer.used());
+    process_data(NULL, 0xFA, imu.buffer.get_buffer(), imu.buffer.used());
 
     BLEData elem;
     while (ble.ring_buffer.read_next(elem))
     {
         elem.serialize(ble.buffer);
-        process_data(NULL, 255, ble.buffer.get_buffer(), ble.buffer.used());
+        process_data(NULL, 0xFA, ble.buffer.get_buffer(), ble.buffer.used());
     }
 
     // Check for messages. Process everything available, we'll
@@ -97,8 +96,8 @@ void TaskWaist::loop()
     ++iter;
 
     // Update missed deadlines if needed.
-    tm.message.t_end = Clock::get_usec<uint32_t>();
-    if (tm.message.t_end - tm.message.t_start > max_loop_time)
+    tm.message.t_end_ms = Clock::get_msec<uint32_t>();
+    if (tm.message.t_end_ms - tm.message.t_start_ms > max_loop_time)
     {
         tm.message.missed_deadline++;
     }
@@ -107,6 +106,7 @@ void TaskWaist::loop()
 
 bool TaskWaist::send_log_data()
 {
+    #if defined(CONFIG_ROLE_HUB)
     static constexpr uint16_t nus_buffer_size = 244;
     static uint8_t buffer[nus_buffer_size];
     uint32_t log_size = flash_log_size();
@@ -159,6 +159,7 @@ bool TaskWaist::send_log_data()
     }
 
     LOG_INF("Finished download!");
+    #endif
     return true;
 }
 

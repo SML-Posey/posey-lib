@@ -10,11 +10,10 @@ class TaskWatchTelemetry
         static constexpr uint8_t message_id = MessageID::TaskWatch;
         static constexpr uint16_t MessageSize =
             1       // Message ID
-            + 4*1   // Task counter
             + 4*2   // Times
             + 1*1   // Invalid checksum
             + 1*1   // Missed deadline
-            + 4*1   // Battery voltage.
+            + 1*1   // Battery voltage.
             ;
         typedef BufferSerializer<MessageSize> Buffer;
 
@@ -26,8 +25,7 @@ class TaskWatchTelemetry
             buffer
                 .write_syncword()
                 .write(message_id)
-                .write(counter)
-                .write(t_start).write(t_end)
+                .write(t_start_ms).write(t_end_ms)
                 .write(invalid_checksum)
                 .write(missed_deadline)
                 .write(Vbatt)
@@ -40,8 +38,7 @@ class TaskWatchTelemetry
             buffer.read<uint16_t>(); // Syncword.
             buffer.read<uint8_t>();  // Message ID.
             buffer
-                .read(counter)
-                .read(t_start).read(t_end)
+                .read(t_start_ms).read(t_end_ms)
                 .read(invalid_checksum)
                 .read(missed_deadline)
                 .read(Vbatt);
@@ -50,13 +47,11 @@ class TaskWatchTelemetry
         }
 
     public:
-        uint32_t counter = 0;
-
-        uint32_t t_start = 0;
-        uint32_t t_end = 0;
+        uint32_t t_start_ms = 0;
+        uint32_t t_end_ms = 0;
 
         uint8_t invalid_checksum = 0;
         uint8_t missed_deadline = 0;
 
-        float Vbatt = 0;
+        uint8_t Vbatt = 0;
 };

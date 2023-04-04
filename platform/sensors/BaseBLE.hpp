@@ -27,7 +27,7 @@ class BaseBLE : public BaseHardwareInterface<BLEData>
         }
 
         void add_detection(
-            const uint32_t time,
+            const uint32_t time_ms,
             const uint8_t uuid[BLEData::uuid_len],
             const uint16_t major,
             const uint16_t minor,
@@ -37,7 +37,7 @@ class BaseBLE : public BaseHardwareInterface<BLEData>
             if (ring_buffer.free() > 0)
             {
                 BLEData & elem = ring_buffer.get_write_buffer();
-                elem.time = time;
+                elem.time_ms = time_ms;
                 for (int i = 0; i < BLEData::uuid_len; ++i)
                     elem.uuid[i] = uuid[i];
                 elem.major = major;

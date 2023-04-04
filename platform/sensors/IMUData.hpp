@@ -11,11 +11,9 @@ class IMUData
         static constexpr uint16_t MessageSize =
             1       // Message ID
             + 4*1   // Time
-            //
-            + 4*(1 + 3)         // ID + 3-DoF Accel
-            // + 4*(1 + 3)         // ID + 3-DoF Gyro
-            // + 4*(1 + 3)         // ID + 3-DoF Magn
-            + 4*(1 + 4 + 1);    // ID + Quat + Acc
+            + 4*3   // 3-DoF Accel
+            + 4*4   // Quat + Acc
+            ;
         typedef BufferSerializer<MessageSize> Buffer;
 
     public:
@@ -26,12 +24,10 @@ class IMUData
             buffer
                 .write_syncword()
                 .write(message_id)
-                .write(time)
+                .write(time_ms)
 
-                .write(An).write(Ax).write(Ay).write(Az)
-                // .write(Gn).write(Gx).write(Gy).write(Gz)
-                // .write(Mn).write(Mx).write(My).write(Mz)
-                .write(Qn).write(Qi).write(Qj).write(Qk).write(Qr).write(Qacc)
+                .write(Ax).write(Ay).write(Az)
+                .write(Qi).write(Qj).write(Qk).write(Qr)
 
                 .write_checksum();
         }
@@ -42,21 +38,16 @@ class IMUData
             buffer.read<uint16_t>(); // Syncword.
             buffer.read<uint8_t>();  // Message ID.
             buffer
-                .read(time)
-                .read(An).read(Ax).read(Ay).read(Az)
-                // .read(Gn).read(Gx).read(Gy).read(Gz)
-                // .read(Mn).read(Mx).read(My).read(Mz)
-                .read(Qn).read(Qi).read(Qj).read(Qk).read(Qr).read(Qacc);
+                .read(time_ms)
+                .read(Ax).read(Ay).read(Az)
+                .read(Qi).read(Qj).read(Qk).read(Qr);
             // Checksum.
             return true;
         }
 
     public:
-        uint32_t time;
+        uint32_t time_ms;
 
-        uint32_t An = 0, Gn = 0, Mn = 0, Qn = 0;
         float Ax = 0, Ay = 0, Az = 0;
-        // float Gx = 0, Gy = 0, Gz = 0;
-        // float Mx = 0, My = 0, Mz = 0;
-        float Qi = 0, Qj = 0, Qk = 0, Qr = 0, Qacc = 0;
+        float Qi = 0, Qj = 0, Qk = 0, Qr = 0;
 };

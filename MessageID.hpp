@@ -15,6 +15,9 @@ namespace MessageID
     constexpr uint8_t DataSummary       = 50;   // 0x32
     constexpr uint8_t DataPacket        = 51;   // 0x33
 
+    // TM from flash.
+    constexpr uint8_t FlashBlockTM      = 100;  // 0x64
+
     // Tasks.
     constexpr uint8_t Task              = 200;  // 0xC8
     constexpr uint8_t TaskWatch         = 201;  // 0xC9

@@ -25,7 +25,7 @@ class BLEData
             buffer
                 .write_syncword()
                 .write(message_id)
-                .write(time)
+                .write(time_ms)
                 .write(uuid)
                 .write(major)
                 .write(minor)
@@ -40,7 +40,7 @@ class BLEData
             buffer.read<uint16_t>(); // Syncword.
             buffer.read<uint8_t>();  // Message ID.
             buffer
-                .read(time)
+                .read(time_ms)
                 .read(uuid)
                 .read(major)
                 .read(minor)
@@ -51,7 +51,7 @@ class BLEData
         }
 
     public:
-        uint32_t time = 0;
+        uint32_t time_ms = 0;
 
         uint8_t uuid[uuid_len];
         uint16_t major = 0;
