@@ -152,7 +152,7 @@ class MessageListener
             return -1;
         }
 
-    private:
+    public:
         inline uint16_t wrap(const uint16_t idx)
             { return idx % ReadBufferSize; }
         inline void inc_wrap(uint16_t & idx, const uint16_t inc = 1)
@@ -168,6 +168,13 @@ class MessageListener
         {
             size = consume(size);
             skipped_bytes += size;
+        }
+        inline uint8_t read_byte()
+        {
+            if (bytes_used == 0) return 0;
+            uint8_t byte = buffer[read_cursor];
+            inc_wrap(read_cursor);
+            return byte;
         }
 
     protected:
