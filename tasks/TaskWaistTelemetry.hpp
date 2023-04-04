@@ -14,7 +14,7 @@ class TaskWaistTelemetry
             + 4*2   // Times
             + 1*1   // Invalid checksum
             + 1*1   // Missed deadline
-            + 4*1   // Battery voltage
+            + 1*1   // Battery voltage
             + 4     // BLE throughput
             ;
         typedef BufferSerializer<MessageSize> Buffer;
