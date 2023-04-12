@@ -234,6 +234,9 @@ void TaskWaist::process_message(const uint16_t mid)
                     break;
                 
                 case Command::DownloadData:
+                    // Disable sensors.
+                    disable_sensors();
+
                     // Send data.
                     LOG_INF("Initiating data download.");
                     cmd.message.ack = MessageAck::OK;
@@ -241,6 +244,9 @@ void TaskWaist::process_message(const uint16_t mid)
                     // Send out all flash data.
                     if (!send_log_data())
                         cmd.message.ack = MessageAck::Error;
+                    
+                    // Reenable sensors.
+                    enable_sensors();
 
                     // Send message indicating we're finished.
                     cmd.serialize();
