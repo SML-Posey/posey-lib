@@ -2,6 +2,8 @@
 
 #include "tasks/TaskWatch.hpp"
 
+#include "posey-platform/platform/io/NordicSAADACDriver.h"
+
 bool TaskWatch::setup()
 {
     bool success = imu.setup();
@@ -24,6 +26,10 @@ void TaskWatch::loop()
     // Send task TM at 1Hz.
     if (iter % 50 == 0)
     {
+        float Vbatt = read_Vbatt();
+        if (Vbatt < 3.2) Vbatt = 3.2;
+        if (Vbatt > 4.2) Vbatt = 4.2;
+        tm.message.Vbatt = (read_Vbatt() - 3.2)/4.2*255;
         tm.serialize();
         writer.write(tm.buffer, writer.SendNow);
     }
