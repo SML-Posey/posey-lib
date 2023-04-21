@@ -8,8 +8,10 @@
 #if defined(CONFIG_LOG)
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/reboot.h>
+#include <zephyr/logging/log_ctrl.h>
 
 #include "posey-platform/platform/io/NordicNUSDriver.h"
+#include "posey-platform/platform/io/NordicSAADACDriver.h"
 
 #define LOG_MODULE_NAME posey_task_hub
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
@@ -88,8 +90,49 @@ void TaskWaist::loop()
     }
 
     // Send task TM at 1Hz.
+    static float Vbatt = 0;
+    static int lowbat = 0;
+
+    Vbatt += read_Vbatt();
     if (iter % 50 == 0)
     {
+        Vbatt /= 50.0;
+
+        if (Vbatt < 3.3)
+        {
+            LOG_WRN("LOW Average Vbat: %.2f V", Vbatt);
+            if (lowbat++ >= 10)
+            {
+                LOG_ERR("Low battery: %.2f V! Sleeping for 5 minutes...", Vbatt);
+            
+                // Flush the log buffer before rebooting.
+                if (IS_ENABLED(CONFIG_LOG_MODE_DEFERRED))
+                    while (log_process());
+
+                // Disable scanning and close connections.
+                disable_scanning();
+                close_connections();
+
+                deep_sleep();
+
+                // Reboot to start fresh scanning.
+                LOG_INF("Rebooting...");
+                sys_reboot(SYS_REBOOT_COLD);
+                lowbat = 0;
+            }
+        }
+        else
+        {
+            // With normal voltages only log every 10s so it's not annoying.
+            if (iter % (50*10) == 0)
+                LOG_INF("NORMAL Average Vbat: %.2f V", Vbatt);
+            lowbat = 0;
+        }
+
+        if (Vbatt < 3.2) Vbatt = 3.2;
+        if (Vbatt > 4.2) Vbatt = 4.2;
+        tm.message.Vbatt = (read_Vbatt() - 3.2)/4.2*255;
+        tm.message.ble_throughput = num_connected_sensors();
         tm.serialize();
         writer.write(tm.buffer, writer.SendNow);
     }
@@ -201,6 +244,7 @@ void TaskWaist::process_message(const uint16_t mid)
             {
                 stop_flash_logging();
                 config_update_data_end_ms(Clock::get_msec<uint32_t>());
+                Clock::delay_msec(1000);
                 refresh_device_config();
             }
 
@@ -219,6 +263,7 @@ void TaskWaist::process_message(const uint16_t mid)
                 
                 case Command::GetDataSummary:
                     // Send data summary.
+                    refresh_device_config();
                     memcpy(
                         tm_data_summary.message.datetime,
                         device_config.data_dt,
@@ -270,7 +315,7 @@ void TaskWaist::process_message(const uint16_t mid)
                     // Initiate logging start.
                     cmd.message.payload[DataSummary::MaxDatetimeSize-1] = 0;
                     config_update_data_dt(reinterpret_cast<const char *>(cmd.message.payload));
-                    config_update_data_end_ms(Clock::get_msec<uint32_t>());
+                    config_update_data_end_ms(0);
                     config_update_data_start_ms(Clock::get_msec<uint32_t>());
                     config_update_data_end(0);
                     refresh_device_config();
