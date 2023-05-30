@@ -2,13 +2,14 @@
 
 #include "tasks/TaskWatch.hpp"
 
-#include "posey-platform/platform/io/NordicSAADACDriver.h"
-#include "posey-platform/platform/io/NordicNUSDriver.h"
-
 #if defined(CONFIG_LOG)
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/reboot.h>
 #include <zephyr/logging/log_ctrl.h>
+
+#include "posey-platform/platform/io/NordicSAADACDriver.h"
+#include "posey-platform/platform/io/NordicNUSDriver.h"
+
 
 #define LOG_MODULE_NAME posey_task_watch
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
@@ -41,6 +42,7 @@ void TaskWatch::loop()
     static float Vbatt = 0;
     static int lowbat = 0;
 
+    #if defined(CONFIG_LOG)
     Vbatt += read_Vbatt();
     if (iter % 50 == 0)
     {
@@ -83,6 +85,7 @@ void TaskWatch::loop()
         tm.serialize();
         writer.write(tm.buffer, writer.SendNow);
     }
+    #endif
     ++iter;
     
     tm.message.t_end_ms = Clock::get_msec<uint32_t>();
