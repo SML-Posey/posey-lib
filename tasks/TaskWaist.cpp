@@ -104,7 +104,7 @@ void TaskWaist::loop()
             if (lowbat++ >= 10)
             {
                 LOG_ERR("Low battery: %.2f V! Sleeping for 5 minutes...", Vbatt);
-            
+
                 // Flush the log buffer before rebooting.
                 if (IS_ENABLED(CONFIG_LOG_MODE_DEFERRED))
                     while (log_process());
@@ -135,6 +135,7 @@ void TaskWaist::loop()
         tm.message.ble_throughput = num_connected_sensors();
         tm.serialize();
         writer.write(tm.buffer, writer.SendNow);
+        process_data(NULL, 0xFA, tm.buffer.get_buffer(), tm.buffer.used());
     }
     ++iter;
 
@@ -260,7 +261,7 @@ void TaskWaist::process_message(const uint16_t mid)
                     Clock::delay_msec(5000);
                     sys_reboot(SYS_REBOOT_COLD);
                     break;
-                
+
                 case Command::GetDataSummary:
                     // Send data summary.
                     refresh_device_config();
@@ -277,7 +278,7 @@ void TaskWaist::process_message(const uint16_t mid)
                     writer.write(tm_data_summary, writer.SendNow);
 
                     break;
-                
+
                 case Command::DownloadData:
                     // Disable sensors.
                     disable_sensors();
@@ -289,14 +290,14 @@ void TaskWaist::process_message(const uint16_t mid)
                     // Send out all flash data.
                     if (!send_log_data())
                         cmd.message.ack = MessageAck::Error;
-                    
+
                     // Reenable sensors.
                     enable_sensors();
 
                     // Send message indicating we're finished.
                     cmd.serialize();
                     writer.write(cmd, writer.SendNow);
-                    
+
                     break;
 
                 case Command::FullFlashErase:
@@ -310,7 +311,7 @@ void TaskWaist::process_message(const uint16_t mid)
                     writer.write(cmd, writer.SendNow);
 
                     break;
-                
+
                 case Command::StartCollecting:
                     // Initiate logging start.
                     cmd.message.payload[DataSummary::MaxDatetimeSize-1] = 0;
@@ -338,7 +339,7 @@ void TaskWaist::process_message(const uint16_t mid)
                     writer.write(cmd, writer.SendNow);
 
                     break;
-                
+
                 case Command::StopCollecting:
                     // Don't need to do anything.
                     break;
