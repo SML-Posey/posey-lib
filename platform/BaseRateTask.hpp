@@ -3,28 +3,23 @@
 #include "platform/BaseTask.hpp"
 
 template <class Limiter>
-class BaseRateTask
-{
+class BaseRateTask {
     public:
-        BaseRateTask(BaseTask & task, const float Hz) :
-            task(task), limiter(Limiter::fromHz(Hz)),
-            executions(0) {}
+        BaseRateTask(BaseTask& task, const float Hz)
+            : task(task), limiter(Limiter::fromHz(Hz)), executions(0) {}
 
         bool setup() { return task.setup(); }
 
-        bool start()
-        {
+        bool start() {
             limiter.start();
             return true;
         }
 
         auto num_executions() const { return executions; }
 
-        bool loop()
-        {
+        bool loop() {
             bool time_to_run = limiter.run();
-            if (time_to_run)
-            {
+            if (time_to_run) {
                 task.loop();
                 ++executions;
             }
@@ -35,7 +30,7 @@ class BaseRateTask
         }
 
     private:
-        BaseTask & task;
+        BaseTask& task;
         Limiter limiter;
         unsigned int executions = 0;
 };

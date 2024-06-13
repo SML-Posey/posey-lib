@@ -5,8 +5,7 @@
 // quickly enough.
 
 template <typename T, int N>
-class ElemRingBuffer
-{
+class ElemRingBuffer {
     public:
         ElemRingBuffer() {}
         ~ElemRingBuffer() {}
@@ -15,22 +14,19 @@ class ElemRingBuffer
         int used() const { return to_read; }
         int free() const { return capacity() - used(); }
 
-        void clear()
-        {
+        void clear() {
             idx_read = idx_write = 0;
             to_read = 0;
         }
 
-        T & get_write_buffer() { return buffer[idx_write]; }
-        void commit_write()
-        {
+        T& get_write_buffer() { return buffer[idx_write]; }
+        void commit_write() {
             ++to_read;
             idx_latest = idx_write;
             inc_wrap(idx_write);
             if (to_read >= capacity())
                 dec_wrap(idx_write);
-            if (to_read > capacity())
-            {
+            if (to_read > capacity()) {
                 --to_read;
                 ++dropped;
             }
@@ -38,27 +34,23 @@ class ElemRingBuffer
             ++total_writes;
         }
 
-        void write(const T element)
-        {
+        void write(const T element) {
             get_write_buffer() = element;
             commit_write();
         }
 
-        bool read_next(T & element)
-        {
-            if (data_available())
-            {
+        bool read_next(T& element) {
+            if (data_available()) {
                 element = buffer[idx_read];
                 inc_wrap(idx_read);
                 to_read -= 1;
                 return true;
-            }
-            else return false;
+            } else
+                return false;
         }
 
         // Not guaranteed to be good...
-        T read_next()
-        {
+        T read_next() {
             T elem;
             if (!read_next(elem))
                 read_latest(elem);
@@ -66,12 +58,8 @@ class ElemRingBuffer
         }
 
         // No guarantees there's something valid in here in the beginning.
-        void read_latest(T & element) const
-        {
-            element = buffer[idx_latest];
-        }
-        T read_latest() const
-        {
+        void read_latest(T& element) const { element = buffer[idx_latest]; }
+        T read_latest() const {
             T latest;
             read_latest(latest);
             return latest;
@@ -81,9 +69,11 @@ class ElemRingBuffer
         auto num_dropped() const { return dropped; }
 
     protected:
-        static inline void inc_wrap(int & idx) { idx = (idx + 1) % N; }
-        static inline void dec_wrap(int & idx) { idx = prev_wrap(idx); }
-        static inline int prev_wrap(const int idx) { return idx ? (idx - 1) % N : N - 1; }
+        static inline void inc_wrap(int& idx) { idx = (idx + 1) % N; }
+        static inline void dec_wrap(int& idx) { idx = prev_wrap(idx); }
+        static inline int prev_wrap(const int idx) {
+            return idx ? (idx - 1) % N : N - 1;
+        }
 
     private:
         T buffer[N];

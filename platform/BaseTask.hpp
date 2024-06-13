@@ -1,7 +1,6 @@
 #pragma once
 
-class BaseTask
-{
+class BaseTask {
     public:
         virtual ~BaseTask() {}
 

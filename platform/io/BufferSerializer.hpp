@@ -1,52 +1,49 @@
 #pragma once
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-class BufferCopyCallback
-{
+class BufferCopyCallback {
     public:
         virtual ~BufferCopyCallback() {}
 
         virtual void reset() = 0;
         virtual void copy(
-            const uint8_t * buffer,
+            const uint8_t* buffer,
             uint16_t size = 0,
             const bool last = true) = 0;
 };
 
 template <uint16_t N>
-class BufferSerializer
-{
+class BufferSerializer {
     public:
         static constexpr uint8_t syncword[2] = {0xca, 0xfe};
 
     public:
-        class CopyCallback : public BufferCopyCallback
-        {
+        class CopyCallback : public BufferCopyCallback {
             public:
-                CopyCallback(BufferSerializer<N> & bs) : bs(bs) {}
+                CopyCallback(BufferSerializer<N>& bs) : bs(bs) {}
 
                 void reset() override { bs.reset(); }
 
                 void copy(
-                    const uint8_t * const buffer,
+                    const uint8_t* const buffer,
                     uint16_t size = 0,
-                    const bool last = true) override
-                {
-                    if (size == 0) size = bs.capacity();
-                    if (last) --size;
+                    const bool last = true) override {
+                    if (size == 0)
+                        size = bs.capacity();
+                    if (last)
+                        --size;
                     for (uint16_t i = 0; i < size; ++i)
                         bs.write(buffer[i]);
-                    if (last)
-                    {
+                    if (last) {
                         bs.write_checksum();
                         bs.rewind();
                     }
                 }
 
             private:
-                BufferSerializer<N> & bs;
+                BufferSerializer<N>& bs;
         };
 
     public:
@@ -55,8 +52,7 @@ class BufferSerializer
     public:
         BufferSerializer() : copy_callback(*this) { reset(); }
 
-        void reset()
-        {
+        void reset() {
             cursor = 0;
             bytes_used = 0;
             checksum = 0;
@@ -65,15 +61,13 @@ class BufferSerializer
         inline void rewind() { cursor = 0; }
 
         template <typename T>
-        BufferSerializer<N> & write(const T & elem)
-        {
+        BufferSerializer<N>& write(const T& elem) {
             // Too big?
             if ((cursor + sizeof(T)) > capacity())
                 return *this;
 
-            const uint8_t * data = reinterpret_cast<const uint8_t * >(&elem);
-            for (size_t bi = 0; bi < sizeof(T); ++bi)
-            {
+            const uint8_t* data = reinterpret_cast<const uint8_t*>(&elem);
+            for (size_t bi = 0; bi < sizeof(T); ++bi) {
                 buffer[cursor + bi] = data[bi];
                 checksum ^= data[bi];
             }
@@ -85,11 +79,8 @@ class BufferSerializer
         }
 
         template <typename T>
-        BufferSerializer<N> & write(
-            const T * data,
-            const uint16_t nelem)
-        {
-            auto size = sizeof(T)*nelem;
+        BufferSerializer<N>& write(const T* data, const uint16_t nelem) {
+            auto size = sizeof(T) * nelem;
 
             // Too big?
             if ((cursor + size) > capacity())
@@ -101,45 +92,33 @@ class BufferSerializer
         }
 
         template <typename T, int TN>
-        BufferSerializer<N> & write(
-            const T (& data)[TN])
-        {
+        BufferSerializer<N>& write(const T (&data)[TN]) {
             return write(data, TN);
         }
 
-        inline BufferSerializer<N> & write_syncword()
-        {
-            return write(syncword);
-        }
+        inline BufferSerializer<N>& write_syncword() { return write(syncword); }
 
-        inline void write_checksum()
-        {
+        inline void write_checksum() {
             buffer[cursor] = checksum;
             ++bytes_used;
             ++cursor;
         }
 
         template <typename T>
-        BufferSerializer<N> & read(T & data)
-        {
-            if (used() >= sizeof(T))
-            {
-                data = *reinterpret_cast<const T *>(&buffer[cursor]);
+        BufferSerializer<N>& read(T& data) {
+            if (used() >= sizeof(T)) {
+                data = *reinterpret_cast<const T*>(&buffer[cursor]);
                 cursor += sizeof(T);
             }
             return *this;
         }
 
         template <typename T>
-        BufferSerializer<N> & read(
-            T * data,
-            const uint16_t nelem)
-        {
-            auto size = sizeof(T)*nelem;
+        BufferSerializer<N>& read(T* data, const uint16_t nelem) {
+            auto size = sizeof(T) * nelem;
 
             // Enough data?
-            if (used() >= size)
-            {
+            if (used() >= size) {
                 for (auto i = 0; i < nelem; ++i)
                     read(data[i]);
             }
@@ -147,14 +126,12 @@ class BufferSerializer
         }
 
         template <typename T, int TN>
-        BufferSerializer<N> & read(T (& data)[TN])
-        {
+        BufferSerializer<N>& read(T (&data)[TN]) {
             return read(data, TN);
         }
 
         template <typename T>
-        T read()
-        {
+        T read() {
             T data;
             read<T>(data);
             return data;
@@ -162,11 +139,9 @@ class BufferSerializer
 
         inline auto capacity() const { return size; }
         inline auto used() const { return bytes_used; }
-        inline const uint8_t * get_buffer() const
-            { return &buffer[0]; }
+        inline const uint8_t* get_buffer() const { return &buffer[0]; }
 
-        bool valid_checksum() const
-        {
+        bool valid_checksum() const {
             uint8_t cs = 0;
             for (uint16_t bi = 0; bi < used() - 1; ++bi)
                 cs ^= buffer[bi];
@@ -177,7 +152,8 @@ class BufferSerializer
 
     private:
         uint8_t checksum = 0;
-        static constexpr uint16_t size = N + sizeof(syncword) + sizeof(checksum);
+        static constexpr uint16_t size =
+            N + sizeof(syncword) + sizeof(checksum);
         uint8_t buffer[size];
         uint16_t cursor = 0;
         uint16_t bytes_used = 0;

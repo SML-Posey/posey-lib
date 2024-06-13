@@ -4,18 +4,17 @@
 
 #include "platform/io/BufferSerializer.hpp"
 
-class FlashBlockIMU
-{
+class FlashBlockIMU {
     public:
         static constexpr uint8_t message_id = MessageID::FlashBlockTM;
         static constexpr uint8_t Samples = 8;
         static constexpr uint16_t MessageSize =
-            1       // Message ID
-            + 4*1   // Time
-            + 1     // Vbatt
-            + 1     // missed_deadlines
-            + 3*4*Samples   // Accelerometer
-            + 4*4*Samples   // Quaternion
+            1                  // Message ID
+            + 4 * 1            // Time
+            + 1                // Vbatt
+            + 1                // missed_deadlines
+            + 3 * 4 * Samples  // Accelerometer
+            + 4 * 4 * Samples  // Quaternion
             ;
         typedef BufferSerializer<MessageSize> Buffer;
 
@@ -32,10 +31,8 @@ class FlashBlockIMU
             const float Qs,
             const float Qi,
             const float Qj,
-            const float Qk)
-        {
-            if (si == 0)
-            {
+            const float Qk) {
+            if (si == 0) {
                 this->time = time;
                 this->Vbatt = Vbatt;
                 this->missed_deadlines = missed_deadlines;
@@ -51,41 +48,48 @@ class FlashBlockIMU
             this->Qk[si] = Qk;
 
             ++si;
-            if (si == Samples) si = 0;
+            if (si == Samples)
+                si = 0;
             return si == 0;
         }
 
-        void serialize(Buffer & buffer) const
-        {
+        void serialize(Buffer& buffer) const {
             static auto message_id = this->message_id;
             buffer.reset();
-            buffer
-                .write_syncword()
+            buffer.write_syncword()
                 .write(message_id)
                 .write(time)
                 .write(Vbatt)
                 .write(missed_deadlines)
 
-                .write(Ax).write(Ay).write(Az)
-                .write(Qs).write(Qi).write(Qj).write(Qk)
+                .write(Ax)
+                .write(Ay)
+                .write(Az)
+                .write(Qs)
+                .write(Qi)
+                .write(Qj)
+                .write(Qk)
 
                 .write_checksum();
         }
 
-        bool deserialize(Buffer & buffer)
-        {
+        bool deserialize(Buffer& buffer) {
             buffer.rewind();
-            buffer.read<uint16_t>(); // Syncword.
-            buffer.read<uint8_t>();  // Message ID.
-            buffer
-                .read(time)
+            buffer.read<uint16_t>();  // Syncword.
+            buffer.read<uint8_t>();   // Message ID.
+            buffer.read(time)
                 .read(Vbatt)
                 .read(missed_deadlines)
 
-                .read(Ax).read(Ay).read(Az)
-                .read(Qs).read(Qi).read(Qj).read(Qk)
-            // Checksum.
-            return true;
+                .read(Ax)
+                .read(Ay)
+                .read(Az)
+                .read(Qs)
+                .read(Qi)
+                .read(Qj)
+                .read(Qk)
+                // Checksum.
+                return true;
         }
 
     public:

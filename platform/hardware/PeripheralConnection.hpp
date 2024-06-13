@@ -2,23 +2,17 @@
 
 #include <stdint.h>
 
-class PeripheralConnection
-{
+class PeripheralConnection {
     public:
         static const int MaxPeripherals = 4;
-        enum Slot : uint8_t
-        {
+        enum Slot : uint8_t {
             Waist = 0,
             LeftWrist = 1,
             RightWrist = 2,
             Ring = 3
         };
 
-        enum ConnectionStatus : uint8_t
-        {
-            Disconnected    = 0,
-            Connected       = 1
-        };
+        enum ConnectionStatus : uint8_t { Disconnected = 0, Connected = 1 };
 
     public:
         virtual ~PeripheralConnection() {}

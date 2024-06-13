@@ -10,13 +10,10 @@
 
 #include "tasks/TaskWatchTelemetry.hpp"
 
-class TaskWatch : public BaseTask
-{
+class TaskWatch : public BaseTask {
     public:
-        TaskWatch(
-            BaseIMU & imu,
-            BaseMessageWriter & writer) :
-            imu(imu), writer(writer) {}
+        TaskWatch(BaseIMU& imu, BaseMessageWriter& writer)
+            : imu(imu), writer(writer) {}
 
         bool setup() override;
         void loop() override;
@@ -25,9 +22,9 @@ class TaskWatch : public BaseTask
         void process_message(const uint16_t mid);
 
     protected:
-        BaseIMU & imu;
+        BaseIMU& imu;
 
-        BaseMessageWriter & writer;
+        BaseMessageWriter& writer;
 
         // Messages handled.
         BufferMessagePair<TaskWatchTelemetry> tm;

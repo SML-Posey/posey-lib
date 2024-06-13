@@ -1,24 +1,16 @@
 #pragma once
 
 template <typename T>
-class BufferMessagePair
-{
+class BufferMessagePair {
     public:
-        bool valid_checksum() const
-        {
-            return buffer.valid_checksum();
-        }
+        bool valid_checksum() const { return buffer.valid_checksum(); }
 
-        T & deserialize()
-        {
+        T& deserialize() {
             message.deserialize(buffer);
             return message;
         }
 
-        void serialize()
-        {
-            message.serialize(buffer);
-        }
+        void serialize() { message.serialize(buffer); }
 
     public:
         typename T::Buffer buffer;
