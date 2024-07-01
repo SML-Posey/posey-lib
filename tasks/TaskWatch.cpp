@@ -24,7 +24,7 @@ bool TaskWatch::setup() {
 }
 
 void TaskWatch::loop() {
-    static uint32_t loop_time = 1e3 / 50;
+    static uint32_t loop_time = 1e3 / 100;
     static uint32_t iter = 0;
 
     tm.message.t_start_ms = Clock::get_msec<uint32_t>();
@@ -39,13 +39,15 @@ void TaskWatch::loop() {
     static int lowbat = 0;
 
 #if defined(CONFIG_LOG)
-    Vbatt += read_Vbatt();
-    if (iter % 50 == 0) {
-        Vbatt /= 50.0;
+    Vbatt += read_Vbatt(false);
+    if (iter % (100 * 1) == 0) {
+        Vbatt /= 100.0 * 1.0;
+
+        read_Vbatt(true);
 
         if (Vbatt < 3.3) {
             LOG_WRN("LOW Average Vbat: %.2f V", Vbatt);
-            if (lowbat++ >= 10000) {
+            if (lowbat++ >= 100 * 60 * 1) {
                 LOG_ERR(
                     "Low battery: %.2f V! Sleeping for 5 minutes...", Vbatt);
 
@@ -67,7 +69,7 @@ void TaskWatch::loop() {
             }
         } else {
             // With normal voltages only log every 10s so it's not annoying.
-            if (iter % (50 * 10) == 0)
+            if (iter % (100 * 10) == 0)
                 LOG_INF("NORMAL Average Vbat: %.2f V", Vbatt);
             lowbat = 0;
         }
@@ -76,7 +78,7 @@ void TaskWatch::loop() {
             Vbatt = 3.2;
         if (Vbatt > 4.2)
             Vbatt = 4.2;
-        tm.message.Vbatt = (read_Vbatt() - 3.2) / 4.2 * 255;
+        tm.message.Vbatt = (read_Vbatt(false) - 3.2) / 4.2 * 255;
         tm.serialize();
         writer.write(tm.buffer, writer.SendNow);
     }
